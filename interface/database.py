@@ -39,6 +39,7 @@ class Lead(Base):
             "company": self.company,
             "location": self.location,
             "about": self.about,
+            "raw_json": self.raw_json,
             "saved_at": self.saved_at.isoformat() if self.saved_at else None,
         }
 
