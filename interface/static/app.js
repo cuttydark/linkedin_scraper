@@ -74,6 +74,7 @@ async function doSave() {
   if (!currentPerson) return;
 
   const btn = document.getElementById('btn-save');
+  const banner = document.getElementById('search-banner');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Guardando...';
 
@@ -90,10 +91,12 @@ async function doSave() {
     } else {
       btn.disabled = false;
       btn.textContent = 'Guardar como lead';
+      setBanner(banner, 'No se pudo guardar el lead.', 'error');
     }
   } catch (e) {
     btn.disabled = false;
     btn.textContent = 'Guardar como lead';
+    setBanner(banner, 'Error de red al guardar.', 'error');
   }
 }
 
@@ -104,6 +107,7 @@ document.getElementById('search-url').addEventListener('keydown', e => {
 // -- LEADS --
 
 async function loadLeads() {
+  const banner = document.getElementById('leads-banner');
   const name = document.getElementById('f-name').value;
   const company = document.getElementById('f-company').value;
   const role = document.getElementById('f-role').value;
@@ -115,9 +119,17 @@ async function loadLeads() {
   if (role) params.set('role', role);
   if (location) params.set('location', location);
 
-  const res = await fetch('/api/leads?' + params.toString());
-  const leads = await res.json();
+  let leads;
+  try {
+    const res = await fetch('/api/leads?' + params.toString());
+    if (!res.ok) throw new Error('Error ' + res.status);
+    leads = await res.json();
+  } catch (e) {
+    setBanner(banner, 'No se pudieron cargar los leads. Asegurate de que la app esta corriendo.', 'error');
+    return;
+  }
 
+  setBanner(banner, null);
   selectedIds.clear();
   updateBulkActions();
 
@@ -140,7 +152,7 @@ async function loadLeads() {
       <td style="color:#64748b">${esc(lead.company || '')}</td>
       <td style="color:#94a3b8;font-size:12px">${esc(lead.location || '')}</td>
       <td style="color:#94a3b8;font-size:12px">${date}</td>
-      <td><a href="${esc(lead.linkedin_url)}" target="_blank" style="color:#3b5bdb;font-size:12px;text-decoration:none">Ver perfil</a></td>
+      <td><a href="${safeHref(lead.linkedin_url)}" target="_blank" style="color:#3b5bdb;font-size:12px;text-decoration:none">Ver perfil</a></td>
     `;
     tbody.appendChild(tr);
   });
@@ -175,7 +187,13 @@ function updateBulkActions() {
 async function deleteSelected() {
   if (selectedIds.size === 0) return;
   if (!confirm('Eliminar ' + selectedIds.size + ' lead(s)?')) return;
-  await Promise.all([...selectedIds].map(id => fetch('/api/leads/' + id, { method: 'DELETE' })));
+  const results = await Promise.allSettled(
+    [...selectedIds].map(id => fetch('/api/leads/' + id, { method: 'DELETE' }))
+  );
+  const failed = results.filter(r => r.status === 'rejected' || (r.value && !r.value.ok)).length;
+  if (failed > 0) {
+    setBanner(document.getElementById('leads-banner'), failed + ' lead(s) no pudieron eliminarse.', 'warning');
+  }
   loadLeads();
 }
 
@@ -218,14 +236,20 @@ async function loadSessionStatus() {
   const data = await res.json();
   const line = document.getElementById('session-status-line');
   const info = document.getElementById('session-info');
-  const dot = '<span class="status-dot ' + data.status + '"></span>';
+  const dot = '<span class="status-dot ' + esc(data.status) + '"></span>';
   const labels = { active: 'Activa', expired: 'Expirada', missing: 'Sin sesion', error: 'Error' };
-  line.innerHTML = dot + (labels[data.status] || data.status);
+  line.innerHTML = dot + (labels[data.status] || esc(data.status));
   info.textContent = data.message || (data.session_file ? 'Archivo: ' + data.session_file : '');
 }
 
 async function reloadSession() {
-  await fetch('/api/session/reload', { method: 'POST' });
+  const btn = document.querySelector('#screen-session .btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Recargando...'; }
+  try {
+    await fetch('/api/session/reload', { method: 'POST' });
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Recargar session.json'; }
+  }
   await loadSessionStatus();
 }
 
@@ -242,4 +266,14 @@ function setBanner(el, msg, type) {
 
 function esc(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/** Returns url only if it uses http/https, otherwise '#' to prevent javascript: injection. */
+function safeHref(url) {
+  try {
+    const u = new URL(url);
+    return (u.protocol === 'https:' || u.protocol === 'http:') ? url : '#';
+  } catch {
+    return '#';
+  }
 }
