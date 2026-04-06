@@ -72,6 +72,9 @@ def test_search_success(mock_run_scrape, client_with_browser):
     assert data["linkedin_url"] == "https://linkedin.com/in/maria"
     assert data["role"] == "Head of Marketing"
     assert data["company"] == "Acme Corp"
+    assert data["location"] == "Madrid"
+    assert data["about"] == "Marketing professional"
+    assert "raw_json" in data
 
 
 @patch("interface.routes.search.run_scrape")
