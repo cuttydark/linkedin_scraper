@@ -16,6 +16,7 @@ from linkedin_scraper import (
     AuthenticationError,
     RateLimitError,
     ProfileNotFoundError,
+    is_logged_in,
 )
 
 logger = logging.getLogger(__name__)
@@ -89,7 +90,6 @@ async def session_status(request: Request):
     if browser is None:
         return {"status": "error", "message": "Browser not started."}
 
-    from linkedin_scraper import is_logged_in
     try:
         logged_in = await is_logged_in(browser.page)
     except Exception:
