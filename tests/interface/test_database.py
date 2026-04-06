@@ -124,3 +124,9 @@ def test_delete_lead(session):
 
 def test_delete_lead_not_found(session):
     assert delete_lead(session, 999) is False
+
+
+def test_get_engine_creates_engine(tmp_path):
+    from sqlalchemy.engine import Engine
+    eng = get_engine(str(tmp_path / "test.db"))
+    assert isinstance(eng, Engine)
