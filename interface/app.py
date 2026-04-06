@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import threading
 import webbrowser
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -18,7 +19,8 @@ from interface.routes.leads import router as leads_router
 
 logger = logging.getLogger(__name__)
 
-SESSION_PATH = "session.json"
+# Absolute path so the app works regardless of working directory
+SESSION_PATH = str(Path(__file__).parent.parent / "session.json")
 STATIC_DIR = Path(__file__).parent / "static"
 
 
@@ -59,7 +61,9 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    webbrowser.open("http://localhost:8000")
+    logging.basicConfig(level=logging.INFO)
+    # Delay browser open until server has time to start
+    threading.Timer(2.5, lambda: webbrowser.open("http://localhost:8000")).start()
     uvicorn.run(
         "interface.app:app",
         host="127.0.0.1",
