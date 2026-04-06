@@ -25,7 +25,11 @@ def engine():
 def app(engine):
     app = FastAPI()
     app.include_router(router)
-    app.dependency_overrides[get_session] = lambda: Session(engine)
+    def override_get_session():
+        with Session(engine) as session:
+            yield session
+
+    app.dependency_overrides[get_session] = override_get_session
     return app
 
 
@@ -55,11 +59,10 @@ def test_create_lead(client):
 
 
 def test_create_lead_duplicate_returns_existing(client):
-    seed_lead(client)
-    response = seed_lead(client)
-    assert response.status_code == 200
-    # Duplicate returns existing lead (same id)
-    assert response.json()["id"] is not None
+    first = seed_lead(client)
+    second = seed_lead(client)
+    assert second.status_code == 200
+    assert second.json()["id"] == first.json()["id"]
 
 
 def test_get_leads_empty(client):

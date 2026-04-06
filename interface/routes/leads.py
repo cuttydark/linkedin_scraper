@@ -42,11 +42,11 @@ def get_session():
 
 class LeadIn(BaseModel):
     linkedin_url: str
-    name: Optional[str]
-    role: Optional[str]
-    company: Optional[str]
-    location: Optional[str]
-    about: Optional[str]
+    name: Optional[str] = None
+    role: Optional[str] = None
+    company: Optional[str] = None
+    location: Optional[str] = None
+    about: Optional[str] = None
     raw_json: str
 
 
