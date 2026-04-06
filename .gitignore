@@ -34,6 +34,13 @@ debug_*.py
 
 # Session files (sensitive cookies)
 linkedin_session.json
+session.json
+
+# Interface database
+leads.db
+
+# Brainstorm / superpowers tooling artifacts
+.superpowers/
 
 # Build artifacts
 MANIFEST

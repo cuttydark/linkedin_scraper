@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
 from sqlalchemy import String, Text, DateTime, create_engine, Engine
+
+# Default database lives in the project root, regardless of working directory
+_DEFAULT_DB_PATH = str(Path(__file__).parent.parent / "leads.db")
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
 
 
@@ -43,7 +47,7 @@ class Lead(Base):
         }
 
 
-def get_engine(db_path: str = "leads.db") -> Engine:
+def get_engine(db_path: str = _DEFAULT_DB_PATH) -> Engine:
     return create_engine(f"sqlite:///{db_path}", connect_args={"check_same_thread": False})
 
 
