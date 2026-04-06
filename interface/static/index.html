@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LinkedIn Scraper</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+<nav id="sidebar">
+  <div class="logo">LinkedIn Scraper</div>
+  <div class="nav-item active" data-screen="search">Buscar perfiles</div>
+  <div class="nav-item" data-screen="leads">Mis leads</div>
+  <div class="nav-bottom">
+    <div class="nav-item" data-screen="session">Sesion LinkedIn</div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <!-- Search screen -->
+  <div id="screen-search" class="screen active">
+    <h2>Buscar perfiles</h2>
+    <div id="search-banner" class="banner"></div>
+    <div class="search-bar">
+      <input type="text" id="search-url" placeholder="https://linkedin.com/in/username" />
+      <button class="btn btn-primary" id="btn-search" onclick="doSearch()">Buscar</button>
+    </div>
+    <div id="result-card">
+      <div class="person-name" id="r-name"></div>
+      <div class="person-meta" id="r-meta"></div>
+      <div class="person-about" id="r-about"></div>
+      <button class="btn btn-success btn-sm" id="btn-save" onclick="doSave()">Guardar como lead</button>
+    </div>
+  </div>
+
+  <!-- Leads screen -->
+  <div id="screen-leads" class="screen">
+    <div class="leads-header">
+      <div>
+        <h2 style="display:inline">Mis leads</h2>
+        <span class="leads-count" id="leads-count"></span>
+      </div>
+      <button class="btn btn-success btn-sm" onclick="exportLeads()">Exportar CSV</button>
+    </div>
+    <div id="leads-banner" class="banner"></div>
+    <div class="filters">
+      <input type="text" id="f-name" placeholder="Nombre..." oninput="loadLeads()" />
+      <input type="text" id="f-company" placeholder="Empresa..." oninput="loadLeads()" />
+      <input type="text" id="f-role" placeholder="Cargo..." oninput="loadLeads()" />
+      <input type="text" id="f-location" placeholder="Ubicacion..." oninput="loadLeads()" />
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="chk-all" onchange="toggleAll(this)" /></th>
+          <th>NOMBRE</th>
+          <th>CARGO</th>
+          <th>EMPRESA</th>
+          <th>UBICACION</th>
+          <th>GUARDADO</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="leads-body"></tbody>
+    </table>
+    <div id="bulk-actions">
+      <span id="bulk-count">0</span> seleccionados —
+      <a onclick="exportSelected()">Exportar seleccion</a>
+      <a class="danger" onclick="deleteSelected()">Eliminar seleccion</a>
+    </div>
+  </div>
+
+  <!-- Session screen -->
+  <div id="screen-session" class="screen">
+    <h2>Sesion LinkedIn</h2>
+    <div class="session-card">
+      <div id="session-status-line" style="font-size:14px;font-weight:600;margin-bottom:8px;"></div>
+      <div class="session-info" id="session-info"></div>
+      <button class="btn btn-primary btn-sm" onclick="reloadSession()">Recargar session.json</button>
+    </div>
+  </div>
+
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>
